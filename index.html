@@ -75,6 +75,7 @@
 </div>
 
 <script>
+const base_url = 'https://maxnews.onrender.com';
 function updateDateTime() {
   const now = new Date();
   document.getElementById("currentTime").textContent = now.toLocaleString('ru-RU', {
@@ -88,7 +89,7 @@ updateDateTime();
 let newsList = [], filteredList = [], currentPage = 1, newsPerPage = 6;
 
 async function fetchNews() {
-  const res = await fetch('/api/news');
+  const res = await fetch(base_url + '/api/news');
   newsList = await res.json();
   filteredList = newsList;
   renderNews(currentPage);
