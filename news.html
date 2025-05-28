@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Детали новости</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css" />
+</head>
+<body class="w3-padding-large">
+  <div class="w3-top w3-white w3-xlarge w3-padding">
+    <a href="/" class="w3-bar-item w3-button">← Назад</a>
+    <span class="w3-bar-item" id="newsTitle">Загрузка...</span>
+  </div>
+
+  <div class="w3-content" style="max-width:800px; margin-top:100px;">
+    <img id="newsImage" src="" style="width:100%; max-height:400px; object-fit:cover;" class="w3-margin-bottom" />
+    <h2 id="newsTitleMain"></h2>
+    <p class="w3-text-grey" id="newsCategory"></p>
+    <p id="newsText"></p>
+    <p><a id="newsOriginal" href="#" target="_blank">Читать в источнике</a></p>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const newsId = params.get('id');
+    if (!newsId) {
+      document.getElementById('newsTitle').textContent = 'Ошибка: ID не указан';
+    } else {
+      fetch('/api/news/' + newsId)
+        .then(function(res) {
+          if (!res.ok) throw new Error('Новость не найдена');
+          return res.json();
+        })
+        .then(function(news) {
+          document.title = news.title;
+          document.getElementById('newsTitle').innerHTML = news.title;
+          document.getElementById('newsTitleMain').innerHTML = news.title;
+          document.getElementById('newsText').textContent = news.fullText || news.text;
+          //document.getElementById('newsImage').src = news.img;
+          document.getElementById('newsOriginal').href = news.link;
+          document.getElementById('newsCategory').textContent = news.category || '';
+        })
+        .catch(function(err) {
+          document.getElementById('newsTitle').textContent = 'Ошибка загрузки';
+        });
+    }
+  </script>
+</body>
+</html>

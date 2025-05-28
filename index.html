@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Новости Кыргызстана</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Karma" />
+  <style>
+    body {
+      font-family: "Karma", sans-serif;
+      background-color: #f4f6f8;
+      color: #222;
+    }
+    .news-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+    .news-card:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      transform: translateY(-5px);
+    }
+    .news-card h4 {
+      font-size: 20px;
+      color: #0b5394;
+      margin: 0 0 10px;
+    }
+    .news-card p {
+      font-size: 15px;
+      color: #333;
+      max-height: 4.5em;
+      overflow: hidden;
+    }
+    .w3-bar {
+      background-color: #ffffff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .w3-button {
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="w3-top w3-white w3-xlarge">
+  <div class="w3-bar w3-padding">
+    <button class="w3-bar-item w3-button" onclick="document.getElementById('mySidebar').style.display='block'">☰</button>
+    <span class="w3-bar-item">Новости Кыргызстана</span>
+    <span class="w3-bar-item w3-right" id="currentTime"></span>
+  </div>
+</div>
+
+<nav class="w3-sidebar w3-bar-block w3-card w3-top w3-xlarge w3-animate-left"
+     style="display:none;z-index:2;width:40%;min-width:300px" id="mySidebar">
+  <a href="javascript:void(0)" onclick="document.getElementById('mySidebar').style.display='none'" class="w3-bar-item w3-button">Закрыть</a>
+  <a href="contacts.html" class="w3-bar-item w3-button">Контакты</a>
+  <a href="currency.html" class="w3-bar-item w3-button">Курс валют</a>
+  <a href="admin.html" class="w3-bar-item w3-button">Админка</a>
+</nav>
+
+<div class="w3-content" style="max-width:1200px; margin-top:80px;">
+  <input type="text" id="searchInput" class="w3-input w3-border w3-margin-top" placeholder="Поиск новостей..." onkeyup="filterNews()" />
+  <div id="newsContainer" class="w3-row-padding w3-stretch w3-margin-top"></div>
+  <div class="w3-center w3-padding-32">
+    <div id="pagination" class="w3-bar"></div>
+  </div>
+</div>
+
+<script>
+function updateDateTime() {
+  const now = new Date();
+  document.getElementById("currentTime").textContent = now.toLocaleString('ru-RU', {
+    year: 'numeric', month: 'long', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
+let newsList = [], filteredList = [], currentPage = 1, newsPerPage = 6;
+
+async function fetchNews() {
+  const res = await fetch('/api/news');
+  newsList = await res.json();
+  filteredList = newsList;
+  renderNews(currentPage);
+}
+
+function renderNews(page) {
+  const container = document.getElementById("newsContainer");
+  container.innerHTML = "";
+  const start = (page - 1) * newsPerPage;
+  const end = start + newsPerPage;
+  filteredList.slice(start, end).forEach(news => {
+    const div = document.createElement("div");
+    div.className = "w3-third w3-padding";
+    div.innerHTML = `
+      <div class="news-card">
+        <h4>${news.title}</h4>
+        <p>${news.text}</p>
+        <a href="news.html?id=${news.id}" class="w3-button w3-small w3-border w3-margin-top">Читать</a>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+  renderPagination();
+}
+
+function renderPagination() {
+  const pagination = document.getElementById("pagination");
+  pagination.innerHTML = "";
+
+  const totalPages = Math.ceil(filteredList.length / newsPerPage);
+  const maxVisiblePages = 5;
+  const currentBlock = Math.floor((currentPage - 1) / maxVisiblePages);
+  const startPage = currentBlock * maxVisiblePages + 1;
+  const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+
+  if (startPage > 1) {
+    pagination.innerHTML += `<a href="#" class="w3-button" onclick="changePage(${startPage - 1}); return false;">←</a>`;
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    pagination.innerHTML += `<a href="#" class="w3-button ${i === currentPage ? 'w3-black' : ''}" onclick="changePage(${i}); return false;">${i}</a>`;
+  }
+
+  if (endPage < totalPages) {
+    pagination.innerHTML += `<a href="#" class="w3-button" onclick="changePage(${endPage + 1}); return false;">→</a>`;
+  }
+}
+
+function changePage(page) {
+  currentPage = page;
+  renderNews(page);
+}
+
+function filterNews() {
+  const query = document.getElementById("searchInput").value.toLowerCase();
+  filteredList = newsList.filter(news =>
+    news.title.toLowerCase().includes(query) || news.text.toLowerCase().includes(query)
+  );
+  currentPage = 1;
+  renderNews(currentPage);
+}
+
+fetchNews();
+</script>
+
+</body>
+</html>

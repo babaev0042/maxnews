@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Админка - MAX NEWS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css" />
+</head>
+<body class="w3-padding">
+
+  <div class="w3-bar w3-white w3-large w3-margin-bottom">
+    <a href="/" class="w3-bar-item w3-button">← Главная</a>
+    <span class="w3-bar-item">Админка</span>
+  </div>
+
+  <div class="w3-content" style="max-width:900px">
+    <h2>Добавить новость</h2>
+    <form class="w3-container w3-card w3-padding w3-margin-bottom" onsubmit="addNews(event)">
+      <label>Заголовок</label>
+      <input class="w3-input w3-margin-bottom" id="title" required>
+
+      <label>Текст</label>
+      <textarea class="w3-input w3-margin-bottom" id="text" required></textarea>
+
+      <label>Ссылка</label>
+      <input class="w3-input w3-margin-bottom" id="link" required>
+
+      <button class="w3-button w3-green">Добавить</button>
+    </form>
+
+    <h2>Все новости</h2>
+    <ul id="newsList" class="w3-ul w3-card-4"></ul>
+  </div>
+
+  <script>
+    async function loadNews() {
+      const res = await fetch('/api/news');
+      const news = await res.json();
+      const list = document.getElementById('newsList');
+      list.innerHTML = '';
+      news.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'w3-bar';
+        li.innerHTML = `
+          <div class="w3-bar-item">
+            <span class="w3-large">${item.title}</span><br>
+            <span>${item.text.substring(0, 100)}...</span><br>
+            <a href="${item.link}" target="_blank">Открыть</a>
+          </div>
+          <button class="w3-button w3-red w3-bar-item w3-right" onclick="deleteNews(${item.id})">Удалить</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    async function addNews(event) {
+      event.preventDefault();
+      const title = document.getElementById('title').value;
+      const text = document.getElementById('text').value;
+      const link = document.getElementById('link').value;
+      const res = await fetch('/api/news', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, text, link })
+      });
+      if (res.ok) {
+        document.getElementById('title').value = '';
+        document.getElementById('text').value = '';
+        document.getElementById('link').value = '';
+        loadNews();
+      } else {
+        alert('Ошибка при добавлении');
+      }
+    }
+
+    async function deleteNews(id) {
+      if (!confirm('Удалить эту новость?')) return;
+      const res = await fetch('/api/news/' + id, { method: 'DELETE' });
+      if (res.ok) {
+        loadNews();
+      } else {
+        alert('Ошибка удаления');
+      }
+    }
+
+    loadNews();
+  </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Курс валют</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css" />
+</head>
+<body class="w3-padding">
+  <div class="w3-bar w3-white w3-large">
+    <a href="/" class="w3-bar-item w3-button">← Главная</a>
+    <span class="w3-bar-item">Курс валют</span>
+  </div>
+  <div class="w3-content" style="max-width:800px; margin-top:40px;">
+    <table class="w3-table-all" id="currencyTable">
+      <thead>
+        <tr><th>Валюта</th><th>Курс (KGS)</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <script>
+    fetch('/api/currency')
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.querySelector('#currencyTable tbody');
+        tbody.innerHTML = '';
+        for (const [code, value] of Object.entries(data)) {
+          tbody.innerHTML += `<tr><td>${code}</td><td>${value}</td></tr>`;
+        }
+      })
+      .catch(err => {
+        document.querySelector('#currencyTable tbody').innerHTML = '<tr><td colspan="2">Ошибка загрузки данных</td></tr>';
+      });
+  </script>
+</body>
+</html>
