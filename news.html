@@ -21,12 +21,13 @@
   </div>
 
   <script>
+    const base_url = 'https://maxnews.onrender.com';
     const params = new URLSearchParams(window.location.search);
     const newsId = params.get('id');
     if (!newsId) {
       document.getElementById('newsTitle').textContent = 'Ошибка: ID не указан';
     } else {
-      fetch('/api/news/' + newsId)
+      fetch(base_url + '/api/news/' + newsId)
         .then(function(res) {
           if (!res.ok) throw new Error('Новость не найдена');
           return res.json();
